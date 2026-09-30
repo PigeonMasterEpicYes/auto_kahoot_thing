@@ -1,29 +1,29 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const fetch = require('node-fetch');
 
 const app = express();
 const PORT = 8080;
 
-// Enable CORS so your frontend can communicate freely with this server
-app.use(cors());
+// Enable CORS so the forwarded Codespaces browser tab can connect
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
-// Serve static HTML files from the current directory
-app.use(express.static(__dirname));
-
-// A dedicated local endpoint to test API responses
+// Main proxy api channel to safely fetch external json resources
 app.get('/api/check/:id', async (req, res) => {
     const targetId = req.params.id;
     
-    // Replace this URL template with the endpoint framework you are testing
+    // We are using a stable placeholder API to verify your local pipeline works perfectly
     const targetUrl = 'https://typicode.com' + targetId;
 
     try {
         const response = await fetch(targetUrl, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'application/json'
             }
         });
@@ -39,9 +39,8 @@ app.get('/api/check/:id', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log('==================================================');
-    console.log(' Local Development Node successfully initialized!');
-    console.log(' Web Interface: http://localhost:' + PORT);
+    console.log(' Cloud Environment Server Running on Port ' + PORT);
     console.log('==================================================');
 });
