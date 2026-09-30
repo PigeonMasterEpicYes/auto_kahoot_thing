@@ -3,61 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codespace Request Sandbox</title>
+    <title>Codespace Control Hub</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .log-box { border: 1px solid #ccc; padding: 12px; height: 180px; overflow-y: auto; background: #1e1e24; color: #a4ef5c; font-family: monospace; border-radius: 6px; margin-top: 15px; }
-        .btn { padding: 12px 24px; font-size: 15px; font-weight: bold; background-color: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; }
-        .btn:hover { background-color: #4338ca; }
+        body { font-family: -apple-system, sans-serif; padding: 20px; background-color: #0d1117; color: #c9d1d9; }
+        .container { max-width: 650px; margin: 0 auto; background: #161b22; padding: 24px; border-radius: 8px; border: 1px solid #30363d; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #8b949e; }
+        input[type="text"] { width: 100%; padding: 10px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: white; box-sizing: border-box; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn { padding: 12px 20px; font-size: 14px; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; transition: background 0.2s; }
+        .btn-test { background-color: #21262d; color: #c9d1d9; border: 1px solid #30363d; }
+        .btn-test:hover { background-color: #30363d; }
+        .btn-action { background-color: #238636; color: white; }
+        .btn-action:hover { background-color: #2ea043; }
+        .log-box { border: 1px solid #30363d; padding: 12px; height: 220px; overflow-y: auto; background: #0d1117; color: #58a6ff; font-family: monospace; border-radius: 6px; font-size: 13px; line-height: 1.6; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Cloud Execution Hub</h1>
-        <p>Proxy validation connection via GitHub Codespaces</p>
+        <h1>Cloud Execution Center</h1>
+        <p style="color: #8b949e; font-size: 14px; margin-top: -8px;">Isolated Backend Proxy Pipeline Node</p>
 
-        <button id="test-btn" class="btn">Execute Cloud Request</button>
+        <!-- Dynamic/Manual Connection Configuration Block -->
+        <div class="input-group">
+            <label for="backend-url">Codespace Port 8080 Forwarded URL:</label>
+            <input type="text" id="backend-url" placeholder="https://github.dev">
+            <span style="font-size: 11px; color: #8b949e;">Leave blank to attempt auto-detection, or paste the link from your Codespaces Ports panel.</span>
+        </div>
 
-        <h3>Telemetry Feed</h3>
-        <div id="log" class="log-box">Awaiting command execution...</div>
+        <div class="controls">
+            <button id="test-pipeline-btn" class="btn btn-test">🧪 Test Pipeline Connection</button>
+            <button id="execute-btn" class="btn btn-action">⚡ Initialize Sequence</button>
+        </div>
+
+        <h3>Live Telemetry Monitor</h3>
+        <div id="log" class="log-box">System standby. Input connection URL or initialize telemetry pipeline.</div>
     </div>
 
     <script>
         const logEl = document.getElementById('log');
-        
-        function getBackendUrl() {
+        const urlInput = document.getElementById('backend-url');
+
+        // Automatically attempts to extract the base URL structure if possible
+        function resolveTargetBase() {
+            const explicitUrl = urlInput.value.trim();
+            if (explicitUrl) {
+                // Ensure trailing slash is removed for clean joining
+                return explicitUrl.replace(/\/$/, '');
+            }
+            
             const currentUrl = window.location.href;
             if (currentUrl.includes('github.dev') || currentUrl.includes('app.github.dev')) {
-                return currentUrl.replace(/-\d+\.app\.github\.dev/, '-8080.app.github.dev').replace(/\/$/, '') + '/api/check/';
+                return currentUrl.replace(/-\d+\.app\.github\.dev/, '-8080.app.github.dev').replace(/\/$/, '');
             }
-            return 'http://localhost:8080/api/check/';
+            return 'http://localhost:8080';
         }
 
-        document.getElementById('test-btn').addEventListener('click', async function() {
-            const randomId = Math.floor(Math.random() * 100) + 1;
-            const baseApiUrl = getBackendUrl();
-            const finalRequestUrl = baseApiUrl + randomId;
-
-            logEl.innerHTML += '<div>[' + new Date().toLocaleTimeString() + '] Dispatching request across cloud node...</div>';
+        function appendLog(message, color) {
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            const row = document.createElement('div');
+            if (color) row.style.color = color;
+            row.innerText = '[' + timestamp + '] ' + message;
+            logEl.appendChild(row);
             logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // Action Item: Test general connectivity to public placeholder service
+        document.getElementById('test-pipeline-btn').addEventListener('click', async function() {
+            const baseNode = resolveTargetBase();
+            const targetUrl = baseNode + '/api/test-connection';
+            
+            appendLog('Pinging proxy server pipeline node...', '#8b949e');
 
             try {
-                const res = await fetch(finalRequestUrl);
-                
-                if (!res.ok) {
-                    throw new Error('Server returned status ' + res.status);
-                }
+                const res = await fetch(targetUrl);
+                if (!res.ok) throw new Error('Proxy responded with status code ' + res.status);
                 
                 const data = await res.json();
-                
-                logEl.innerHTML += '<div style="color: #6ee7b7;">✔ SUCCESS! Pipeline cleared. Status: ' + data.status + '</div>';
-                logEl.scrollTop = logEl.scrollHeight;
+                appendLog('✔ PIPELINE ONLINE: ' + data.message + ' (Status: ' + data.status + ')', '#58a6ff');
             } catch (err) {
-                logEl.innerHTML += '<div style="color: #f87171;">❌ FAILED: ' + err.message + '</div>';
-                logEl.innerHTML += '<div style="color: #e4e4e7; font-size: 11px;">Target: ' + finalRequestUrl + '</div>';
-                logEl.scrollTop = logEl.scrollHeight;
+                appendLog('❌ CONNECTION REFUSED: Ensure your backend server is running and the port is set to PUBLIC.', '#f85149');
+                appendLog('Attempted Link: ' + targetUrl, '#8b949e');
+            }
+        });
+
+        // Action Item: Execute targeted verification routing
+        document.getElementById('execute-btn').addEventListener('click', async function() {
+            const baseNode = resolveTargetBase();
+            const testId = Math.floor(Math.random() * 100) + 1;
+            const targetUrl = baseNode + '/api/check/' + testId;
+
+            appendLog('Dispatching automated sequence identifier...', '#8b949e');
+
+            try {
+                const res = await fetch(targetUrl);
+                if (!res.ok) throw new Error('Endpoint rejected with code ' + res.status);
+                
+                const data = await res.json();
+                appendLog('✔ VALID RESPONSE RECEIVED: Resource segment confirmed. Status: ' + data.status, '#3fb950');
+            } catch (err) {
+                appendLog('❌ SEQUENCE FAULT: Failed to complete request string.', '#f85149');
+                appendLog('Target URL Route: ' + targetUrl, '#8b949e');
             }
         });
     </script>
