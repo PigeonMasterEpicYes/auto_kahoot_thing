@@ -2,109 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Scanner Node</title>
+    <title>Local Testing Environment</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
-        .stats { margin-bottom: 20px; font-size: 18px; }
-        .stats div { margin-bottom: 5px; }
-        .log-container { border: 1px solid #ccc; padding: 10px; height: 200px; overflow-y: auto; font-family: monospace; background: #f9f9f9; }
-        .btn { padding: 10px 15px; margin-right: 5px; cursor: pointer; }
+        .log-box { border: 1px solid #ccc; padding: 10px; height: 150px; overflow-y: auto; background: #fafafa; font-family: monospace; }
+        .btn { padding: 10px 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h1>Code Scanner Node</h1>
-    <p>Live Request Sandbox</p>
+    <h1>Local Development Interface</h1>
+    <p>Connected to machine pipeline via port 8080</p>
 
-    <div class="stats">
-        <div>Total: <span id="total-count">0</span></div>
-        <div style="color: green;">Valid: <span id="valid-count">0</span></div>
-        <div style="color: red;">Invalid: <span id="invalid-count">0</span></div>
-    </div>
+    <button id="test-btn" class="btn">Execute Local Request</button>
 
-    <div style="margin-bottom: 20px;">
-        <button id="start-btn" class="btn">▶ Start</button>
-        <button id="stop-btn" class="btn" disabled>■ Stop</button>
-        <button id="clear-btn" class="btn">Clear</button>
-    </div>
-
-    <h2>Activity Log</h2>
-    <div id="log" class="log-container">
-        <div>System initialized.</div>
-    </div>
+    <h3>Telemetry Feed</h3>
+    <div id="log" class="log-box">Awaiting execution...</div>
 
     <script>
-        let isScanning = false;
-        let total = 0, valid = 0, invalid = 0;
-        let scanInterval;
-
-        const totalEl = document.getElementById('total-count');
-        const validEl = document.getElementById('valid-count');
-        const invalidEl = document.getElementById('invalid-count');
         const logEl = document.getElementById('log');
         
-        const startBtn = document.getElementById('start-btn');
-        const stopBtn = document.getElementById('stop-btn');
-
-        function addLog(text, color) {
-            const entry = document.createElement('div');
-            if (color) entry.style.color = color;
-            entry.innerText = '[' + new Date().toLocaleTimeString() + '] ' + text;
-            logEl.appendChild(entry);
-            logEl.scrollTop = logEl.scrollHeight;
-        }
-
-        async function testCode() {
-            if (!isScanning) return;
-
-            const pin = Math.floor(1000000 + Math.random() * 9000000).toString();
-            total++;
-            totalEl.innerText = total;
-
-            const targetUrl = 'https://kahoot.it' + pin;
-            // FIXED QUERY STRUCURE: Explicitly appends the '?url=' keyword requirement
-            const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(targetUrl);
+        document.getElementById('test-btn').addEventListener('click', async function() {
+            // Generate a random ID between 1 and 100 to feed into the test API
+            const randomId = Math.floor(Math.random() * 100) + 1;
+            logEl.innerHTML += '<div>[' + new Date().toLocaleTimeString() + '] Dispatching request for ID: ' + randomId + '</div>';
 
             try {
-                const response = await fetch(proxyUrl);
+                // Communicates directly with your local server endpoint
+                const res = await fetch('http://localhost:8080/api/check/' + randomId);
+                const data = await res.json();
                 
-                if (response.status === 200) {
-                    valid++;
-                    validEl.innerText = valid;
-                    addLog('SUCCESS: Found entry -> ' + pin, 'green');
-                } else {
-                    invalid++;
-                    invalidEl.innerText = invalid;
-                    addLog('Tested -> ' + pin + ' (Status: ' + response.status + ')', 'red');
-                }
-            } catch (error) {
-                invalid++;
-                invalidEl.innerText = invalid;
-                addLog('FAULT on PIN ' + pin + ': ' + error.message, 'darkred');
+                logEl.innerHTML += '<div style="color: green;">Response Received! Status: ' + data.status + '</div>';
+                logEl.scrollTop = logEl.scrollHeight;
+            } catch (err) {
+                logEl.innerHTML += '<div style="color: red;">Connection Error: ' + err.message + '</div>';
             }
-        }
-
-        startBtn.addEventListener('click', function() {
-            isScanning = true;
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-            addLog('Scanner sequence active.', 'black');
-            scanInterval = setInterval(testCode, 1500); 
-        });
-
-        stopBtn.addEventListener('click', function() {
-            isScanning = false;
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            clearInterval(scanInterval);
-            addLog('Scanner stopped.', 'black');
-        });
-
-        document.getElementById('clear-btn').addEventListener('click', function() {
-            total = 0; valid = 0; invalid = 0;
-            totalEl.innerText = '0'; validEl.innerText = '0'; invalidEl.innerText = '0';
-            logEl.innerHTML = '<div>Buffer reset.</div>';
         });
     </script>
 </body>
