@@ -3,271 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kahoot Engine Scanner</title>
+    <title>Code Scanner Node</title>
     <style>
-        :root {
-            --bg-main: #0f0f12;
-            --bg-card: #16161a;
-            --bg-accent: #22222b;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --primary: #4f46e5;
-            --success: #10b981;
-            --error: #ef4444;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 640px;
-            background: var(--bg-card);
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--bg-accent);
-        }
-
-        h1 {
-            font-size: 24px;
-            margin: 0 0 4px 0;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 24px;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: var(--bg-accent);
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .stat-value.total { color: var(--text-main); }
-        .stat-value.valid { color: var(--success); }
-        .stat-value.invalid { color: var(--text-muted); }
-
-        .controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-start { background: var(--primary); color: white; }
-        .btn-start:hover:not(:disabled) { background: #4338ca; }
-        
-        .btn-stop { background: var(--bg-accent); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.2); }
-        .btn-stop:hover:not(:disabled) { background: rgba(239, 68, 68, 0.1); }
-
-        .btn-clear { background: transparent; color: var(--text-muted); }
-        .btn-clear:hover { color: var(--text-main); }
-
-        .btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .log-header {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .log-box {
-            background: #09090b;
-            padding: 16px;
-            border-radius: 10px;
-            height: 240px;
-            overflow-y: auto;
-            font-family: "SFMono-Regular", Consolas, Monaco, monospace;
-            font-size: 13px;
-            border: 1px solid var(--bg-accent);
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
-        }
-
-        .log-row {
-            display: flex;
-            margin-bottom: 6px;
-            line-height: 1.4;
-        }
-
-        .log-time {
-            color: #52525b;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
-
-        .log-text { flex-grow: 1; }
-        .log-row.valid .log-text { color: var(--success); font-weight: 600; }
-        .log-row.invalid .log-text { color: #52525b; }
-        .log-row.system .log-text { color: #a1a1aa; font-style: italic; }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .stats { margin-bottom: 20px; font-size: 18px; }
+        .stats div { margin-bottom: 5px; }
+        .log-container { border: 1px solid #ccc; padding: 10px; height: 200px; overflow-y: auto; font-family: monospace; background: #f9f9f9; }
+        .btn { padding: 10px 15px; margin-right: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Kahoot Code Engine</h1>
-        <div class="subtitle">Live Network Request Sandbox Mode</div>
+    <h1>Code Scanner Node</h1>
+    <p>Live Request Sandbox</p>
 
-        <div class="dashboard">
-            <div class="stat-card">
-                <div class="stat-label">Total Checked</div>
-                <div id="val-total" class="stat-value total">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Valid PINs</div>
-                <div id="val-valid" class="stat-value valid">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Invalid</div>
-                <div id="val-invalid" class="stat-value invalid">0</div>
-            </div>
-        </div>
+    <div class="stats">
+        <div>Total: <span id="total-count">0</span></div>
+        <div style="color: green;">Valid: <span id="valid-count">0</span></div>
+        <div style="color: red;">Invalid: <span id="invalid-count">0</span></div>
+    </div>
 
-        <div class="controls">
-            <button id="btn-start" class="btn btn-start">⚡ Start Scanning</button>
-            <button id="btn-stop" class="btn btn-stop" disabled>🛑 Stop</button>
-            <button id="btn-clear" class="btn btn-clear">Reset Counters</button>
-        </div>
+    <div style="margin-bottom: 20px;">
+        <button id="start-btn" class="btn">▶ Start</button>
+        <button id="stop-btn" class="btn" disabled>■ Stop</button>
+        <button id="clear-btn" class="btn">Clear</button>
+    </div>
 
-        <div class="log-header">Activity Feed</div>
-        <div id="log-box" class="log-box"></div>
+    <h2>Activity Log</h2>
+    <div id="log" class="log-container">
+        <div>System initialized.</div>
     </div>
 
     <script>
-        let scanning = false;
-        let cTotal = 0, cValid = 0, cInvalid = 0;
-        let loopRef = null;
+        let isScanning = false;
+        let total = 0, valid = 0, invalid = 0;
+        let scanInterval;
 
-        const elTotal = document.getElementById('val-total');
-        const elValid = document.getElementById('val-valid');
-        const elInvalid = document.getElementById('val-invalid');
-        const elLog = document.getElementById('log-box');
+        const totalEl = document.getElementById('total-count');
+        const validEl = document.getElementById('valid-count');
+        const invalidEl = document.getElementById('invalid-count');
+        const logEl = document.getElementById('log');
         
-        const btnStart = document.getElementById('btn-start');
-        const btnStop = document.getElementById('btn-stop');
-        const btnClear = document.getElementById('btn-clear');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
 
-        function pushLog(message, variant = 'system') {
-            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-            const row = document.createElement('div');
-            row.className = `log-row ${variant}`;
-            row.innerHTML = `<span class="log-time">${timeStr}</span><span class="log-text">${message}</span>`;
-            elLog.appendChild(row);
-            elLog.scrollTop = elLog.scrollHeight;
+        function addLog(text, color) {
+            const entry = document.createElement('div');
+            if (color) entry.style.color = color;
+            entry.innerText = '[' + new Date().toLocaleTimeString() + '] ' + text;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
         }
 
-        function createPin() {
-            return Math.floor(1000000 + Math.random() * 9000000).toString();
-        }
+        async function testCode() {
+            if (!isScanning) return;
 
-        async function scanCycle() {
-            if (!scanning) return;
+            const pin = Math.floor(1000000 + Math.random() * 9000000).toString();
+            total++;
+            totalEl.innerText = total;
 
-            const pin = createPin();
-            cTotal++;
-            elTotal.innerText = cTotal;
-
-            const target = `https://kahoot.it{pin}`;
-            // FIXED SYNTAX: Corrected template string and component evaluation injection
-            const proxy = `https://corsproxy.io{encodeURIComponent(target)}`;
+            const targetUrl = 'https://kahoot.it' + pin;
+            // FIXED QUERY STRUCURE: Explicitly appends the '?url=' keyword requirement
+            const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(targetUrl);
 
             try {
-                const res = await fetch(proxy);
-                if (res.status === 200) {
-                    cValid++;
-                    elValid.innerText = cValid;
-                    pushLog(`FOUND VALID PIN: ${pin}`, 'valid');
+                const response = await fetch(proxyUrl);
+                
+                if (response.status === 200) {
+                    valid++;
+                    validEl.innerText = valid;
+                    addLog('SUCCESS: Found entry -> ' + pin, 'green');
                 } else {
-                    cInvalid++;
-                    elInvalid.innerText = cInvalid;
-                    pushLog(`Checked PIN ${pin} (Status ${res.status})`, 'invalid');
+                    invalid++;
+                    invalidEl.innerText = invalid;
+                    addLog('Tested -> ' + pin + ' (Status: ' + response.status + ')', 'red');
                 }
-            } catch (err) {
-                cInvalid++;
-                elInvalid.innerText = cInvalid;
-                pushLog(`Proxy delay or dead route on PIN ${pin}`, 'invalid');
+            } catch (error) {
+                invalid++;
+                invalidEl.innerText = invalid;
+                addLog('FAULT on PIN ' + pin + ': ' + error.message, 'darkred');
             }
         }
 
-        btnStart.addEventListener('click', () => {
-            scanning = true;
-            btnStart.disabled = true;
-            btnStop.disabled = false;
-            pushLog('Scanning sequence initiated...', 'system');
-            loopRef = setInterval(scanCycle, 1200); // 1.2 second delays to avoid proxy IP bans
+        startBtn.addEventListener('click', function() {
+            isScanning = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            addLog('Scanner sequence active.', 'black');
+            scanInterval = setInterval(testCode, 1500); 
         });
 
-        btnStop.addEventListener('click', () => {
-            scanning = false;
-            btnStart.disabled = false;
-            btnStop.disabled = true;
-            clearInterval(loopRef);
-            pushLog('Scanning sequence halted.', 'system');
+        stopBtn.addEventListener('click', function() {
+            isScanning = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            clearInterval(scanInterval);
+            addLog('Scanner stopped.', 'black');
         });
 
-        btnClear.addEventListener('click', () => {
-            cTotal = 0; cValid = 0; cInvalid = 0;
-            elTotal.innerText = '0';
-            elValid.innerText = '0';
-            elInvalid.innerText = '0';
-            elLog.innerHTML = '';
-            pushLog('Engine monitor logs reset.', 'system');
+        document.getElementById('clear-btn').addEventListener('click', function() {
+            total = 0; valid = 0; invalid = 0;
+            totalEl.innerText = '0'; validEl.innerText = '0'; invalidEl.innerText = '0';
+            logEl.innerHTML = '<div>Buffer reset.</div>';
         });
-
-        // App init message
-        pushLog('System initialized and ready.', 'system');
     </script>
 </body>
 </html>
