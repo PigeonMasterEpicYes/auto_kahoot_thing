@@ -5,7 +5,6 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = 8080;
 
-// Enable CORS so the forwarded Codespaces browser tab can connect
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
@@ -13,11 +12,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Main proxy api channel to safely fetch external json resources
+// Serving verification routing for the connection diagnostic check button
+app.get('/api/test-connection', (req, res) => {
+    res.status(200).json({
+        success: true,
+        status: 200,
+        message: "Proxy node communication loopback verified successfully."
+    });
+});
+
+// Structural routing framework pointing to public placeholder dataset API
 app.get('/api/check/:id', async (req, res) => {
     const targetId = req.params.id;
-    
-    // We are using a stable placeholder API to verify your local pipeline works perfectly
     const targetUrl = 'https://typicode.com' + targetId;
 
     try {
@@ -41,6 +47,6 @@ app.get('/api/check/:id', async (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log('==================================================');
-    console.log(' Cloud Environment Server Running on Port ' + PORT);
+    console.log(' Cloud Workspace Backend Core Active on Port ' + PORT);
     console.log('==================================================');
 });
